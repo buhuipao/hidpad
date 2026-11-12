@@ -4,6 +4,21 @@ Use an Android phone as a Bluetooth keyboard and mouse. The phone connects to th
 computer directly, as a standard Bluetooth input device. The computer needs no
 extra software.
 
+<p>
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="24%" alt="Mouse / Keyboard screen">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="24%" alt="Multimedia screen">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="24%" alt="Presenter screen">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="24%" alt="Numpad screen">
+</p>
+
+## Download
+
+- **APK:** the newest build is on the [releases page](https://github.com/buhuipao/hidpad/releases).
+  Open the `.apk` file on the phone and allow the install.
+
+HidPad is free and open source under the [MIT license](LICENSE). It has no ads, no account, and
+no analytics of its own; see the [privacy policy](PRIVACY.md).
+
 ## Screens
 
 | Screen | What it does |
@@ -20,8 +35,8 @@ extra software.
 
 - Android 9 or newer. The phone must allow the Bluetooth HID device role; a few
   phone makers turn it off.
-- A computer, tablet, or TV with Bluetooth: Windows, macOS, Linux, ChromeOS,
-  Android, iOS / iPadOS.
+- A computer, tablet, or TV that accepts a standard Bluetooth keyboard and mouse.
+  Tested with Windows and Android.
 
 ## Pairing
 
@@ -66,8 +81,30 @@ flutter build apk --release
 # build/app/outputs/flutter-apk/app-release.apk
 ```
 
-Release builds are signed with the debug key, which is fine for testing. Add a
-real keystore in `android/app/build.gradle.kts` before publishing.
+### Signing
+
+A release build is signed with the keystore named in `android/key.properties`, a file that is
+kept out of Git:
+
+```properties
+storeFile=/path/to/keystore.jks
+storePassword=...
+keyAlias=...
+keyPassword=...
+```
+
+The file is read as Java properties, so a password must not contain a backslash. With no
+`key.properties`, the build is signed with the debug key. Such a build is fine for a
+local test, but it cannot update an installed release.
+
+### Automatic builds
+
+- Every push to `main` and every pull request runs `flutter analyze` and a build
+  (`.github/workflows/ci.yml`).
+- Pushing a tag such as `v1.2.3` builds the signed APK and app bundle and publishes them as a
+  GitHub release (`.github/workflows/release.yml`). The tag must match `version` in
+  `pubspec.yaml`. The workflow reads three repository secrets: `KEYSTORE_BASE64` (the keystore
+  file, base64-encoded), `KEYSTORE_PASSWORD` (used for the store and the key), and `KEY_ALIAS`.
 
 ## Code map
 
@@ -80,3 +117,6 @@ real keystore in `android/app/build.gradle.kts` before publishing.
 | `lib/keys.dart` | HID usage codes and the US character map |
 | `lib/widgets.dart` | Shared widgets: key button, touchpad, typing box, connection banner |
 | `lib/pages/` | One file per screen |
+| `tool/icon.swift` | Draws the launcher icons and the store graphics (macOS: `swift tool/icon.swift`) |
+| `fastlane/metadata/android/` | Google Play listing: texts, icon, banner, screenshots |
+| `.github/workflows/` | Automatic builds and releases |

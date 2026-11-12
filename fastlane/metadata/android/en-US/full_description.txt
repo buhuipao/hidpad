@@ -1,0 +1,23 @@
+HidPad turns an Android phone into a Bluetooth keyboard and mouse. The phone connects to the computer directly, as a standard Bluetooth input device. The computer needs no extra software and no account.
+
+Screens
+• Mouse / Keyboard: a touchpad (move, tap to click, two fingers to scroll or right-click, three-finger tap for middle click, hold still then move to drag), three mouse buttons, and a box that types with the phone keyboard.
+• Multimedia: volume, play / pause, previous / next, rewind / forward, stop, arrows with OK / Back / Home / Menu, screen brightness.
+• PC keyboard: a US keyboard in landscape with F1-F12, Esc, Tab, arrows, and Ctrl / Shift / Alt / AltGr / Win that hold for the next key or lock.
+• Numpad: a numeric keypad.
+• Presenter: next / previous slide, start, start from the current slide, black screen, end, and a pointer pad.
+• Code scanner: scans QR codes and barcodes and types their text on the computer.
+
+Works with
+Devices that accept a standard Bluetooth keyboard and mouse. Tested with Windows and Android.
+
+Good to know
+• Needs Android 9 or newer. A few phone makers turn the Bluetooth keyboard role off.
+• Text is typed with a US key map. Set the computer's keyboard layout to US.
+• The connection lives while HidPad is on screen.
+
+Privacy
+HidPad has no ads, no account, and no analytics of its own. Keys and pointer moves go only to the paired computer. The camera is used only to scan codes, on the phone. The scanner uses Google's ML Kit library, which can send device details, an installation identifier, and performance figures about the library itself to Google.
+
+Open source
+https://github.com/buhuipao/hidpad

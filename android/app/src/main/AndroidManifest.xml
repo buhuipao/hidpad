@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE" />
     <uses-feature android:name="android.hardware.bluetooth" android:required="true" />
     <application
+        android:allowBackup="false"
         android:label="HidPad"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">

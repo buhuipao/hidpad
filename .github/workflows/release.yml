@@ -1,0 +1,53 @@
+name: Release
+
+# Pushing a tag like v1.2.3 builds the signed APK and app bundle and publishes them as a GitHub release.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: 3.44.4
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check that the tag matches the version in pubspec.yaml
+        run: |
+          version=$(sed -nE 's/^version: ([^+]+).*/\1/p' pubspec.yaml)
+          test "v$version" = "$GITHUB_REF_NAME" ||
+            { echo "::error::tag $GITHUB_REF_NAME does not match version $version in pubspec.yaml"; exit 1; }
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: 17
+      # Pinned to a commit and run with no cache: this job holds the signing key.
+      - uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2.23.0
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+      - name: Set up the signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+        run: |
+          : "${KEYSTORE_BASE64:?secret is not set}" "${KEYSTORE_PASSWORD:?secret is not set}" "${KEY_ALIAS:?secret is not set}"
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/release.jks
+          printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEYSTORE_PASSWORD" > android/key.properties
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter build apk --release
+      - run: flutter build appbundle --release
+      - name: Publish the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cp build/app/outputs/flutter-apk/app-release.apk "HidPad-$GITHUB_REF_NAME.apk"
+          cp build/app/outputs/bundle/release/app-release.aab "HidPad-$GITHUB_REF_NAME.aab"
+          gh release create "$GITHUB_REF_NAME" "HidPad-$GITHUB_REF_NAME.apk" "HidPad-$GITHUB_REF_NAME.aab" \
+            --title "HidPad ${GITHUB_REF_NAME#v}" --generate-notes

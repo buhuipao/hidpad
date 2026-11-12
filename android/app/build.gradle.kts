@@ -1,7 +1,17 @@
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+}
+
+// Release signing. android/key.properties is kept out of Git and names the keystore:
+//   storeFile=<path, relative to android/app or absolute>
+//   storePassword=...   keyAlias=...   keyPassword=...
+val keyProperties = Properties().apply {
+    val file = rootProject.file("key.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -22,11 +32,22 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (!keyProperties.isEmpty) {
+            create("release") {
+                storeFile = file(keyProperties.getProperty("storeFile"))
+                storePassword = keyProperties.getProperty("storePassword")
+                keyAlias = keyProperties.getProperty("keyAlias")
+                keyPassword = keyProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // ponytail: test builds are signed with the debug key. Add a real keystore before
-            // publishing; an app signed with a new key cannot update this one in place.
-            signingConfig = signingConfigs.getByName("debug")
+            // With no key.properties the build is signed with the debug key: good for a local
+            // test, but it cannot update an installed release, which is signed with another key.
+            signingConfig = signingConfigs.findByName("release") ?: signingConfigs.getByName("debug")
         }
     }
 }
