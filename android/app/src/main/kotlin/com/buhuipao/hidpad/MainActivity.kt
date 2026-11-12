@@ -8,11 +8,13 @@ import android.bluetooth.BluetoothHidDevice
 import android.bluetooth.BluetoothHidDeviceAppSdpSettings
 import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
+import android.content.ActivityNotFoundException
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
@@ -92,6 +94,14 @@ class MainActivity : FlutterActivity() {
                     prefs.edit().putString(call.argument("key"), call.argument("value")).apply()
                     result.success(null)
                 }
+                "openUrl" -> result.success(
+                    try {
+                        startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(call.arguments as String)))
+                        true
+                    } catch (e: ActivityNotFoundException) {
+                        false // no browser on this phone
+                    }
+                )
                 else -> result.notImplemented()
             }
         }

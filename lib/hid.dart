@@ -92,6 +92,9 @@ class Hid {
     return _channel.invokeMethod('setPref', {'key': key, 'value': '$value'});
   }
 
+  /// Opens [url] in the phone's browser. False when the phone has no app that can open it.
+  Future<bool> openUrl(String url) async => await _channel.invokeMethod<bool>('openUrl', url) ?? false;
+
   // ---- connection ----
 
   /// Asks the user for whatever is missing (permission, Bluetooth on), then registers.

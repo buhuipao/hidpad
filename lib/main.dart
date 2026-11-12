@@ -66,11 +66,21 @@ class _ShellState extends State<Shell> {
   static final _devicesIndex = _all.length - 1;
 
   static const _landscapeBarHeight = 40.0;
+  static const _privacyUrl = 'https://github.com/buhuipao/hidpad/blob/main/PRIVACY.md';
 
   final _scaffold = GlobalKey<ScaffoldState>();
   int _index = 0;
 
   void _open(int index) => setState(() => _index = index);
+
+  Future<void> _openPrivacyPolicy() async {
+    _scaffold.currentState?.closeDrawer();
+    final opened = await Hid.instance.openUrl(_privacyUrl);
+    if (opened || !mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('No browser found. Read the policy at $_privacyUrl')));
+  }
 
   NavigationDrawerDestination _entry(_Destination d) =>
       NavigationDrawerDestination(icon: Icon(d.icon), label: Text(d.title));
@@ -130,6 +140,15 @@ class _ShellState extends State<Shell> {
           const Divider(indent: 28, endIndent: 28),
           _heading('Configuration'),
           _entry(_devices),
+          // A link, not a screen: laid out to line up with the entries above.
+          ListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: 28),
+            horizontalTitleGap: 12,
+            leading: const Icon(Icons.privacy_tip_outlined),
+            title: const Text('Privacy policy'),
+            titleTextStyle: Theme.of(context).textTheme.labelLarge?.copyWith(color: scheme.onSurfaceVariant),
+            onTap: _openPrivacyPolicy,
+          ),
         ],
       ),
       body: SafeArea(

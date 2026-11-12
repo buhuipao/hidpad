@@ -17,7 +17,7 @@ extra software.
   Open the `.apk` file on the phone and allow the install.
 
 HidPad is free and open source under the [MIT license](LICENSE). It has no ads, no account, and
-no analytics of its own; see the [privacy policy](PRIVACY.md).
+no analytics of its own; see the [privacy policy](PRIVACY.md), which the app menu links to as well.
 
 ## Screens
 
