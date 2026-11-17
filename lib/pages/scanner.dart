@@ -1,6 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:qr_code_scanner_plus/qr_code_scanner_plus.dart';
 
 import '../hid.dart';
 
@@ -18,28 +20,44 @@ class _ScannerPageState extends State<ScannerPage> {
   static const _historySize = 20;
 
   final _hid = Hid.instance;
+  final _viewKey = GlobalKey(debugLabel: 'scanner view');
+  StreamSubscription<Barcode>? _scans;
+  bool _cameraDenied = false;
   List<String> _history = const [];
   Map<String, DateTime> _lastSeen = const {}; // codes in view now or a moment ago
 
-  void _detect(BarcodeCapture capture) {
+  void _onViewCreated(QRViewController controller) {
+    _scans?.cancel();
+    _scans = controller.scannedDataStream.listen(_detect);
+  }
+
+  void _onPermissionSet(QRViewController _, bool granted) {
+    if (mounted) setState(() => _cameraDenied = !granted);
+  }
+
+  void _detect(Barcode barcode) {
+    final value = barcode.code;
+    if (value == null || value.isEmpty) return;
     final now = DateTime.now();
-    final inView = {
-      for (final barcode in capture.barcodes)
-        if (barcode.rawValue case final value? when value.isNotEmpty) value,
-    };
     final recent = {
       for (final seen in _lastSeen.entries)
         if (now.difference(seen.value) < _repeatGap) seen.key: seen.value,
     };
-    final fresh = inView.where((value) => !recent.containsKey(value)).toList();
-    _lastSeen = {...recent, for (final value in inView) value: now};
-    if (fresh.isEmpty) return;
+    final isFresh = !recent.containsKey(value);
+    _lastSeen = {...recent, value: now};
+    if (!isFresh) return;
     HapticFeedback.mediumImpact();
-    fresh.forEach(_send);
-    setState(() => _history = [...fresh, ..._history].take(_historySize).toList());
+    _send(value);
+    setState(() => _history = [value, ..._history].take(_historySize).toList());
   }
 
   void _send(String value) => _hid.typeText(_hid.prefBool(Pref.scanEnter, true) ? '$value\n' : value);
+
+  @override
+  void dispose() {
+    _scans?.cancel();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +70,33 @@ class _ScannerPageState extends State<ScannerPage> {
             padding: const EdgeInsets.all(8),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
-              child: MobileScanner(onDetect: _detect),
+              // The view is removed while the camera is denied: it asks for the permission again on
+              // every resume, which loops once Android stops showing the prompt.
+              child: _cameraDenied
+                  ? ColoredBox(
+                      color: Colors.black,
+                      child: Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                'The camera is off for HidPad.\nAllow it in the system settings, then try again.',
+                                textAlign: TextAlign.center,
+                                style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+                              ),
+                              TextButton(
+                                style: TextButton.styleFrom(foregroundColor: Colors.white),
+                                onPressed: () => setState(() => _cameraDenied = false),
+                                child: const Text('Try again'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    )
+                  : QRView(key: _viewKey, onQRViewCreated: _onViewCreated, onPermissionSet: _onPermissionSet),
             ),
           ),
         ),

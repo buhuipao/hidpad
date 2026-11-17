@@ -16,8 +16,9 @@ extra software.
 - **APK:** the newest build is on the [releases page](https://github.com/buhuipao/hidpad/releases).
   Open the `.apk` file on the phone and allow the install.
 
-HidPad is free and open source under the [MIT license](LICENSE). It has no ads, no account, and
-no analytics of its own; see the [privacy policy](PRIVACY.md), which the app menu links to as well.
+HidPad is free and open source under the [MIT license](LICENSE). It has no ads, no account, no
+analytics, and no internet permission; see the [privacy policy](PRIVACY.md), which the app menu
+links to as well.
 
 ## Screens
 
@@ -118,5 +119,5 @@ local test, but it cannot update an installed release.
 | `lib/widgets.dart` | Shared widgets: key button, touchpad, typing box, connection banner |
 | `lib/pages/` | One file per screen |
 | `tool/icon.swift` | Draws the launcher icons and the store graphics (macOS: `swift tool/icon.swift`) |
-| `fastlane/metadata/android/` | Google Play listing: texts, icon, banner, screenshots |
+| `fastlane/metadata/android/` | Store listing for Google Play and F-Droid: texts, icon, banner, screenshots, changelogs |
 | `.github/workflows/` | Automatic builds and releases |

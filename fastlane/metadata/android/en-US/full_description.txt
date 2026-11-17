@@ -17,7 +17,7 @@ Good to know
 • The connection lives while HidPad is on screen.
 
 Privacy
-HidPad has no ads, no account, and no analytics of its own. Keys and pointer moves go only to the paired computer. The camera is used only to scan codes, on the phone. The scanner uses Google's ML Kit library, which can send device details, an installation identifier, and performance figures about the library itself to Google.
+HidPad has no ads, no account, and no analytics. It has no internet permission. Keys and pointer moves go only to the paired computer. The camera is used only to scan codes, on the phone.
 
 Open source
 https://github.com/buhuipao/hidpad
